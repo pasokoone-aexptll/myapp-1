@@ -6,10 +6,10 @@ import { InputGroup, InputGroupInput, InputGroupAddon } from "@/components/ui/in
 
 import { ArrowUp } from "lucide-react";
 
-export function Logs() {
+export function LogsView() {
   return (
     <div className="w-full h-full flex flex-col gap-4">
-      <div className="flex flex-col items-center justify-start gap-4 w-full h-full overflow-y-scroll">
+      <div className="flex flex-col items-center justify-start gap-4 w-full h-full overflow-y-scroll px-2">
         <Message index={1} id="xy_0x0_yx" date="2026/09/05 00:19:43" message="今日ひとすくな" />
         <Message index={2} id="nemu_o0x" date="2026/09/05 00:20:01" message="わかる最近いない" />
         <Message index={3} id="_x_y_x_o0" date="2026/09/05 00:22:09" message="みんなホテルじゃない?" />
