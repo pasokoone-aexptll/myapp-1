@@ -1,5 +1,5 @@
 
-export function Message({ index, id, date, message }: { index: number; id: string; date: string; message: string }) {
+export function ChatComponent({ index, id, date, message }: { index: number; id: string; date: string; message: string }) {
   return (
     <div className="flex items-start justify-start gap-4 w-full border-t-1 border-zinc-100 py-4">
       <p>{index}</p>

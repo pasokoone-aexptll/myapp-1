@@ -1,13 +1,38 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import * as maplibregl from "maplibre-gl"
-import { mockPeople } from "@/lib/mock-people"
+import type { GeoJSONSource } from "maplibre-gl"
+import type { Person } from "@/stores/antennaSpaceStore";
+import "maplibre-gl/dist/maplibre-gl.css"
+
+type MapsViewProps = {
+  people: Person[];
+}
 
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs")
 
-export function Map() {
+export function MapView({ people }: MapsViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const [initialPeople] = useState(() => people)
+
+  function createPeopleGeoJSON(currentPeople: Person[]) {
+    return {
+      type: "FeatureCollection" as const,
+      features: currentPeople.map((person) => ({
+        type: "Feature" as const,
+        properties: {
+          id: person.id,
+          name: person.name,
+        },
+        geometry: {
+          type: "Point" as const,
+          coordinates: [person.lng, person.lat],
+        },
+      })),
+    }
+  }
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -20,6 +45,7 @@ export function Map() {
       pitch: 55,
       bearing: -20,
     })
+    mapRef.current = map
 
     map.on("load", () => {
       map.addSource("openfreemap", {
@@ -61,24 +87,9 @@ export function Map() {
         },
       })
 
-      const peopleGeoJSON = {
-        type: "FeatureCollection" as const,
-        features: mockPeople.map((person) => ({
-          type: "Feature" as const,
-          properties: {
-            id: person.id,
-            name: person.name,
-          },
-          geometry: {
-            type: "Point" as const,
-            coordinates: [person.lng, person.lat],
-          },
-        })),
-      }
-
       map.addSource("people", {
         type: "geojson",
-        data: peopleGeoJSON,
+        data: createPeopleGeoJSON(initialPeople),
       })
 
       // 影
@@ -93,7 +104,7 @@ export function Map() {
           "circle-stroke-color": "#000000",
           "circle-opacity": 0.4,
           "circle-translate": [2, 4],
-          "circle-blur": 0.9,
+          "circle-blur": 1.5,
         },
       })
 
@@ -135,9 +146,18 @@ export function Map() {
     })
 
     return () => {
+      mapRef.current = null
       map.remove()
     }
-  }, [])
+  }, [initialPeople])
+
+  useEffect(() => {
+    const source = mapRef.current?.getSource("people") as GeoJSONSource | undefined
+
+    if (source?.type === "geojson") {
+      source.setData(createPeopleGeoJSON(people))
+    }
+  }, [people])
 
   return (
     <div
